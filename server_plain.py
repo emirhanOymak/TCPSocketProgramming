@@ -16,7 +16,7 @@ def handle_client(conn, addr):
             if command == 'EXIT':
                 break
             elif command == 'LIST':
-                files = " - ".join(os.listdir("shared"))
+                files = ",".join(os.listdir("shared"))
                 conn.sendall(files.encode())
             elif command.startswith("UPLOAD"):
                 _, filename = command.split()
@@ -32,6 +32,14 @@ def handle_client(conn, addr):
                     file_data = f.read()
                 conn.sendall(len(file_data).to_bytes(8, 'big'))
                 conn.sendall(file_data)
+            elif command.startswith("DELETE"):
+                _, filename = command.split()
+                try:
+                    os.remove(os.path.join("shared", filename))
+                    conn.sendall(b"OK")
+                except Exception as e:
+                    conn.sendall(f"ERROR: {e}".encode())
+
     finally:
         conn.close()
         print(f" Bağlantı kapandı: {addr}")
